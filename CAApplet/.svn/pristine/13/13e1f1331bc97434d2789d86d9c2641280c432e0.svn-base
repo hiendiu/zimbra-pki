@@ -1,0 +1,21 @@
+package com.ecoit.ca.applet;
+
+import com.ecoit.ca.token.TokenModule;
+
+public class Test {
+	public static void main(String args[]){
+		SampleApplet sampleApplet = new SampleApplet();
+		sampleApplet.setFileChoose("D:/WORK/ECOIT/file.doc");
+		TokenModule token = null;
+		try {
+//			token = TokenModules.newDefaultTokenModule();
+//			String encryptData = sampleApplet.encryptionFile("ABCDEFEFEF", token.getCertificate().getPublicKey().toString());
+//			System.out.println(encryptData);
+//			String dataString = sampleApplet.decryptionFile1(encryptData);
+//			System.out.println(dataString);
+			System.out.println(sampleApplet.decryptFromServer("asds"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}

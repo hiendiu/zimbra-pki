@@ -1,0 +1,17 @@
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import sun.misc.BASE64Decoder;
+
+import com.ecoit.ca.applet.SampleApplet;
+
+
+public class test {
+	public static void main(String args[]){
+		SampleApplet applet = new SampleApplet();
+		String base64 = applet.signFile();
+		System.out.println(applet.getFilePath());
+		System.out.println(applet.verifyFile("E:/Hướng dẫn sử dụng Applet ký file1.docx", base64));
+	}
+}

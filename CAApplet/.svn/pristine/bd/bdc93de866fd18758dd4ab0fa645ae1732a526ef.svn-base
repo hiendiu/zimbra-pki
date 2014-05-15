@@ -1,0 +1,26 @@
+package com.ecoit.ca.applet;
+
+import com.ecoit.ca.token.SampleTokenModule;
+import com.ecoit.ca.token.TokenModule;
+import com.ecoit.ca.token.TokenModules;
+import com.ecoit.ca.utilities.UnicodeUtils;
+
+public class Test {
+	public static void main(String args[]){
+		SampleApplet sampleApplet = new SampleApplet();
+		sampleApplet.setFileChoose("D:/WORK/ECOIT/Hướng dẫn sử dụng Applet ký file.pdf");
+		try {
+			String base64String = UnicodeUtils.unicodeToBase64("test");
+			System.out.println(base64String);
+			String encrypt = sampleApplet.encryptionForm(base64String, sampleApplet.getPublicKeyString());
+			System.out.println();
+			System.out.println(encrypt);
+			System.out.println();
+			System.out.println(sampleApplet.decryptionForm(encrypt));
+			
+			sampleApplet.signFile();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}

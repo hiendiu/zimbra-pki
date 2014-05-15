@@ -1,0 +1,13 @@
+import com.ecoit.ca.applet.SampleApplet;
+
+
+public class TestSignFile {
+	public static void main(String args[]){
+		SampleApplet applet = new SampleApplet();
+		applet.setFileChoose("D:/WORK/ECOIT/Hướng dẫn sử dụng Applet ký file.pdf");
+		String base64 = applet.signFile();
+		String signedFile = applet.getFilePath();
+		System.out.println(signedFile);
+		System.out.println(applet.verifyFile(signedFile, base64));
+	}
+}

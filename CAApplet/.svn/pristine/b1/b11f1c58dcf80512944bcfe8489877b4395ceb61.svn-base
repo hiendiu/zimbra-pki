@@ -1,0 +1,33 @@
+package com.ecoit.ca.utilities;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+
+import org.apache.commons.net.time.TimeTCPClient;
+
+import com.ecoit.ca.applet.exception.TokenException;
+
+public class DateFromServer {
+	private static TimeTCPClient client;
+
+	public static Date getDate() {
+		return getDate("time-a.timefreq.bldrdoc.gov");
+	}
+
+	public static Date getDate(String newServer) {
+		client = new TimeTCPClient();
+		try {
+			client.setDefaultTimeout(5000);
+			client.connect(newServer);
+			return client.getDate();
+
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
+}

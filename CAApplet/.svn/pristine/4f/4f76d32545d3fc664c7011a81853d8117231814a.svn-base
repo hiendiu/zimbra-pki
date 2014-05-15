@@ -1,0 +1,11 @@
+import com.ecoit.ca.applet.SampleApplet;
+
+
+public class TestEncrypFile {
+	public static void main(String args[]){
+		SampleApplet applet = new SampleApplet();
+		String signedFile = applet.encryptionFile("D:/WORK/ECOIT/Hướng dẫn sử dụng Applet ký file.pdf");
+		System.out.println(signedFile);
+//		System.out.println(applet.decryptionFile(signedFile));
+	}
+}

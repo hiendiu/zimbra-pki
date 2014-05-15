@@ -1,0 +1,512 @@
+package com.ecoit.ca.applet;
+
+import java.applet.Applet;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.math.BigInteger;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.AccessController;
+import java.security.KeyFactory;
+import java.security.PrivilegedAction;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.RSAPublicKeySpec;
+import javax.swing.JFrame;
+
+
+import sun.misc.BASE64Decoder;
+import com.ecoit.ca.auth.BasicAuthenticationModule;
+import com.ecoit.ca.encrypt.EncryptionModule;
+import com.ecoit.ca.encrypt.SampleEncryption;
+import com.ecoit.ca.signature.FileSigner;
+import com.ecoit.ca.signature.FormSigner;
+import com.ecoit.ca.signature.SigningModules;
+import com.ecoit.ca.token.TokenModule;
+import com.ecoit.ca.token.TokenModules;
+import com.ecoit.ca.utilities.Base64Utils;
+import com.ecoit.ca.utilities.HashData;
+import com.ecoit.ca.utilities.UnicodeUtils;
+import com.lowagie.text.pdf.codec.Base64;
+import com.sun.org.omg.SendingContext.CodeBasePackage.URLHelper;
+
+public class SampleApplet extends Applet {
+	private String signedPath;
+	private String encrypt, decrypt, encryptPath, decryptPath;
+	private boolean verify1, verify2, available = false;
+	private String signature;
+	private Certificate cer;
+	private PublicKey pub;
+	private String repondFromServer = null;
+	private String dataSharePoint = "";
+	private String unicode, base64, hashed;
+	private String zimbraString;
+	private String name = "";
+	private JFrame frame;
+	public SampleApplet() {
+		frame = new JFrame();
+	}
+
+	public String getNameInToken() {
+
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public synchronized Object run() {
+				try {
+					TokenModule token = TokenModules.newDefaultTokenModule();
+					name = ((X509Certificate) token.getCertificate())
+							.getSubjectDN().getName();
+					int index = name.indexOf("CN=");
+					int indexLast = name.indexOf(",", index);
+					name = name.substring(index + 3, indexLast);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
+
+		return this.name;
+
+	}
+
+	public String signFile(final String path) {
+
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public  Object run() {
+				try {
+					System.out.println(path);
+					final FileSigner signer = SigningModules
+							.createFileSigner(path);
+					MainGui gui = new MainGui(frame);
+					if (gui.ans == 1) signedPath = signer.signFile();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
+
+		return signedPath;
+
+	}
+
+	public boolean verifyFile(final String path) {
+		verify1 = false;
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public synchronized Object run() {
+				try {
+					final FileSigner signer = SigningModules
+							.createFileSigner(path);
+					verify1 = signer.verifyFile();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
+		return verify1;
+	}
+
+	public String signFile(final String fileName,
+			final String base64String) {
+
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public synchronized Object run() {
+				try {
+					
+					String myfile = URLDecoder.decode(fileName, "UTF-8");
+					
+					System.out.println(myfile);
+					FileOutputStream outputStream = new FileOutputStream(
+							new File(myfile));
+					byte[] c = Base64.decode(base64String);
+					outputStream.write(c);
+					outputStream.close();
+					final FileSigner signer = SigningModules
+							.createFileSigner(myfile);
+					MainGui gui = new MainGui(frame);
+					if (gui.ans == 1) signedPath = signer.signFile();
+					File file = new File(signedPath);
+					signedPath = file.getAbsolutePath();
+
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
+		return signedPath;
+
+	}
+
+	public boolean verifyFile(final String path,
+			final String base64String) {
+		verify1 = false;
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				try {
+					String myPath = java.net.URLDecoder.decode(path);
+					FileOutputStream outputStream = new FileOutputStream(
+							new File(myPath));
+					byte[] c = (new BASE64Decoder()).decodeBuffer(base64String);
+					outputStream.write(c);
+					outputStream.close();
+					final FileSigner signer = SigningModules
+							.createFileSigner(myPath);
+					verify1 = signer.verifyFile();
+					Files.delete(Paths.get(myPath));
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
+
+		return verify1;
+
+	}
+
+	public String signForm(final String originalData) {
+
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public synchronized Object run() {
+				try {
+					final FormSigner signer = SigningModules.createFormSigner();
+					MainGui gui = new MainGui(frame);
+					if (gui.ans == 1) signature = signer.signForm(originalData);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
+		return signature;
+
+	}
+
+	public boolean verifyFormString(final String signature,
+			final String originalData, final String pub) {
+		verify1 = false;
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+			@Override
+			public Object run() {
+				try {
+					String modulusString = pub.substring(
+							pub.indexOf("modulus") + 9,
+							pub.indexOf("  public exponent:") - 1);
+					BigInteger modulus = new BigInteger(modulusString);
+					BigInteger exponent = new BigInteger("65537");
+
+					KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+					RSAPublicKeySpec pubKeySpec = new RSAPublicKeySpec(modulus,
+							exponent);
+					RSAPublicKey key = (RSAPublicKey) keyFactory
+							.generatePublic(pubKeySpec);
+					verify1 = verifyForm(signature, originalData, key);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
+		return verify1;
+	}
+
+	public boolean verifyFormModulus(final String signature,
+			final String originalData, final String modulusString) {
+		verify1 = false;
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+			@Override
+			public Object run() {
+				try {
+
+					BigInteger modulus = new BigInteger(modulusString);
+					BigInteger exponent = new BigInteger("65537");
+
+					KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+					RSAPublicKeySpec pubKeySpec = new RSAPublicKeySpec(modulus,
+							exponent);
+					RSAPublicKey key = (RSAPublicKey) keyFactory
+							.generatePublic(pubKeySpec);
+					verify1 = verifyForm(signature, originalData, key);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
+		return verify1;
+	}
+
+	public boolean verifyForm(final String signature,
+			final String originalData, final PublicKey pub) {
+		verify2 = false;
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				try {
+					FormSigner signer = SigningModules.createFormSigner();
+					verify2 = signer.verifyForm(signature, originalData, pub);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
+
+		return verify2;
+
+	}
+
+	public String encryptionForm(final String original, final String publicKey) {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public  Object run() {
+				try{
+				SampleEncryption em = new SampleEncryption(publicKey, "");
+				final EncryptionModule en = em.createFormEncryption();
+				MainGui gui = new MainGui(frame);
+				if (gui.ans == 1) encrypt = en.encrypt(original);
+				}catch(Exception ex){
+				}
+				return null;
+			}
+		});
+		return encrypt;
+	}
+
+	public String decryptionForm(final String encryptedData) {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public synchronized Object run() {
+				try {
+					SampleEncryption em = new SampleEncryption("", "");
+					final EncryptionModule en = em.createFormEncryption();
+					MainGui gui = new MainGui(frame);
+					if (gui.ans == 1) decrypt = en.decrypt(encryptedData);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
+		return decrypt;
+	}
+
+	public String encryptionFile(final String original) {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public synchronized Object run() {
+				try {
+					
+					SampleEncryption em = new SampleEncryption("", "");
+					final EncryptionModule en = em.createFileEncryption();
+					MainGui gui = new MainGui(frame);
+					if (gui.ans == 1) encryptPath = en.encrypt(original);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
+		return encryptPath;
+	}
+
+	public String decryptionFile(final String encryptedData) {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public synchronized Object run() {
+				try {
+					SampleEncryption em = new SampleEncryption("", "");
+					final EncryptionModule en = em.createFileEncryption();
+					MainGui gui = new MainGui(frame);
+					if (gui.ans == 1) decryptPath = en.decrypt(encryptedData);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+		});
+		return decryptPath;
+	}
+
+	public boolean checkTokenAvailable() {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				try {
+					TokenModule token = TokenModules.newDefaultTokenModule();
+					available = token.checkTokenAvailable();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				return null;
+			}
+		});
+		return available;
+	}
+
+	public String decryptFromServer(final String challenge) {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				try {
+					BasicAuthenticationModule authen = new BasicAuthenticationModule();
+					repondFromServer = authen.respond(challenge);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				return null;
+			}
+		});
+		return repondFromServer;
+	}
+
+	public Certificate getCertificate() {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				try {
+					TokenModule token = TokenModules.newDefaultTokenModule();
+					cer = token.getCertificate();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				return null;
+			}
+		});
+		return cer;
+	}
+
+	public PublicKey getPublicKey() {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				try {
+
+					TokenModule token = TokenModules.newDefaultTokenModule();
+					pub = token.getCertificate().getPublicKey();
+					// pub.toString();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				return null;
+			}
+		});
+		return pub;
+	}
+
+	public String getPublicKeyString() {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				try {
+
+					TokenModule token = TokenModules.newDefaultTokenModule();
+					pub = token.getCertificate().getPublicKey();
+					// pub.toString();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				return null;
+			}
+		});
+		return pub.toString();
+	}
+
+	public void stopApplet() {
+		System.exit(1);
+	}
+
+	public String unicodeToBase64(final String unicodeString) {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				base64 = UnicodeUtils.unicodeToBase64(unicodeString);
+				return null;
+			}
+		});
+		return base64;
+	}
+
+	public String base64ToUnicode(final String base64String) {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				unicode = UnicodeUtils.base64ToUnicode(base64String);
+				return null;
+			}
+		});
+		return unicode;
+	}
+
+	public String hashedData(final String data) {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				hashed = HashData.HashString(data);
+				return null;
+			}
+		});
+		return hashed;
+	}
+
+	public String decryptForZimbra(final String encryptData,
+			final String encryptKey) {
+		AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+			@Override
+			public Object run() {
+				try {
+					SampleEncryption sampleEncryption = new SampleEncryption(
+							encryptKey);
+					EncryptionModule enc = sampleEncryption
+							.createFormEncryption();
+					zimbraString = enc.decrypt(encryptData);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				return null;
+			}
+		});
+		return zimbraString;
+	}
+}

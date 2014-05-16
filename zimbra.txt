@@ -1,11 +1,11 @@
-Qu� tr�nh c�i d?t h? th?ng zimbra mail server
-C�i d?t h? th?ng zimbra mail server du?c th?c hi?n v?i h? di?u h�nh m� ngu?n m? Ubuntu 10.04 (64bit) tr�n m�y ?o VMware Workstation 9.0.1. Phi�n b?n zimbra s? d?ng d? c�i d?t l� Zimbra Collaboration Suite Open Source Edition 7.1.3 GA. Vi?c c�i d?t zimbra tr�n h? di?u h�nh m� ngu?n m? phi�n b?n tr�n Ubuntu 10.04 LTS c?n c� c�c y�u c?u:
-�	RAM t?i thi?u 2GB.
-�	C�i d?t ubuntu-10.04.4-desktop-amd64 v�o m�y ?o MVware Workstation 9.0.1.
-�	Server hostname s? d?ng hiendiu.com.
-�	M?t Public IP.
-�	C?u h�nh DNS A v� b?n ghi MX d? �nh x? v?i Public IP tr�n m�y ch?.
-Sau khi c�i d?t ubuntu tr�n m�y ?o, kh?i d?ng h? di?u h�nh Ubuntu v?a c�i d?t v� ch?y chuong tr�nh terminal d? th?c hi?n c�c l?nh sau d�y d? chu?n b? cho vi?c c�i d?t zimbra.
+                      Quá trình cài đặt hệ thống zimbra mail server
+Cài đặt hệ thống zimbra mail server được thực hiện với hệ điều hành mã nguồn mở Ubuntu 10.04 (64bit) trên máy ảo VMware Workstation 9.0.1. Phiên bản zimbra sử dụng cài đặt là Zimbra Collaboration Suite Open Source Edition 7.1.3 GA. Việc cài đặt zimbra trên hệ điều hành mã nguồn mở phiên bản trên Ubuntu 10.04 LTS cần có các yêu cầu:
+�	RAM tối thi2GB.
+�	Cài đặt ubuntu-10.04.4-desktop-amd64 vào máy ảo ware Workstation 9.0.1.
+�	Server hostname sử dụng hiendiu.com.
+�	Một Public IP.
+�	cấu hình DNS A và bản ghi MX để ánh xạ với   Public IP trên máy chủ.
+Sau khi cài đặt ubuntu trên máy ảo, khởi động hệ điều hành Ubuntu vừa cài đặt và chạy chương trình terminal để thực hiện các lệnh sau đây để chuẩn bị cho việc cài đặt  zimbra.
 
 sudo apt-get update
 sudo apt-get dist-upgrade
@@ -20,10 +20,10 @@ Download  Zimbra Collaboration Suite Open Source Edition 7.1.3 GA.
 wget http://files.zimbra.com/downloads/7.1.3_GA/zcs-7.1.3_GA_3346.UBUNTU10_64.20110928134610.tgz
 tar xvfz zcs*.tgz
 cd zcs*
-�	C�i d?t BIND9 cho NAT 1-1
+�	Cài đặt BIND9 cho NAT 1-1
 sudo apt-get install bind9 
 
-�	Ch?nh s?a /etc/bind/named.conf.options nhu sau:
+�	chỉnh sửa /etc/bind/named.conf.options như sau:
 options {
         directory "/var/cache/bind";
  
@@ -49,7 +49,7 @@ zone "hiendiu.com" {
         file "db.hiendiu.com";
 };
  
-�	Sau d� t?o  /var/cache/bind/db.hiendiu.com d?ng qu�n thay d?i t�n t?p tin d? ph� h?p v?i zone file:
+�	sau đó tạo  /var/cache/bind/db.hiendiu.com đừng quên thay đổi tên tập tin để phù hợp với zone file
 $ttl 38400
 @       IN      SOA     webmail.hiendiu.com. webmail.hiendiu.com. (
                         2011091202
@@ -66,13 +66,13 @@ $ttl 38400
 ns1     A       192.168.253.135
 ns2     A       192.168.253.135
 webmail A       192.168.253.135
-�	Ch?nh s?a /etc/resolv.conf v� thay d?i nameserver l� 127.0.0.1
+�	chỉnh sửa /etc/resolv.conf và thay đổi nameserver là 127.0.0.1
 search zimbra.hiendiu.com
 nameserver 127.0.0.1
-�	Restart bind9
+�	Restart bind9
 sudo /etc/init.d/bind9 restart
 
-�	Ki?m tra l?i c�c thi?t l?p MX b?ng l?nh:
+�	Kiểm tra lại các thiết lập MX bằng lệnh: 
 dig zimbra.hiendiu.com mx					
  
 
@@ -100,7 +100,7 @@ ns2.hiendiu.com. 38400  IN      A       192.168.253.135
 ;; SERVER: 192.168.253.2#53(192.168.253.2)
 ;; WHEN: Mon May 2 03:10:04 2014
 ;; MSG SIZE  rcvd: 94
-   N?u c�c thi?t l?p nhu tr�n th� ch�ng ta d� ho�n th�nh bu?c chu?n b? c?a qu� tr�nh c�i d?t zimbra. 
+  Nếu các thiết lập như trên thì chúng ta đã hoàn thành bước chuẩn bị của quá trình cài đặt zimbra. 
 Install Zimbra
 sudo ./install.sh
  
@@ -324,7 +324,7 @@ Main menu
 Address unconfigured (**) items  (? - help) 3
 
 
-�	B?m ph�m 3 d? config Admin Password (ph�m 4) sau d� b?m r d? quay l?i v� b?m a d? �p d?ng cho c?u h�nh zimbra
+�	Bấm phím 3  để config Admin Password (phím 4 ) sau đó bấm r  để quay lại và bấm a để áp dụng cấu hình cho zimbra. 
  
 
 Main menu
@@ -445,7 +445,7 @@ Moving /tmp/zmsetup.03102014-210301.log to /opt/zimbra/log
 
 Configuration complete - press return to exit
 
-�	Sau khi ho�n t?t c�i d?t, ki?m tra b?ng c�ch m?
-   https://192.168.253.135:7071 v� d?t qu?n tr? ngu?i d�ng v?i m?t kh?u.
+�	Sau khi hoàn thành cài đặt, kiểm tra bằng cách mở
+   https://192.168.253.135:7071 và đặt quản trị người dùng với mật khẩu.
  
 
